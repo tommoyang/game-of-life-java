@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class Board {
@@ -6,8 +7,10 @@ public class Board {
     private int width;
     private boolean prepared = false;
 
+    private int iteration = 0;
+
     private Element[][] board;
-    private List<Element> living;
+    private List<Element> elementList;
 
     public Board(int height, int width) {
         // Minimum Height and Width = 3
@@ -21,7 +24,7 @@ public class Board {
 
         this.initialFill();
 
-        this.living = new ArrayList<>();
+        this.elementList = new ArrayList<>();
     }
 
     private Element element(int x, int y) {
@@ -66,35 +69,25 @@ public class Board {
     public void fill(int x, int y) {
         element(x, y).setState(true);
 
-        this.living.add(element(x, y));
+        this.elementList.add(element(x, y));
     }
 
     public void prepare() {
-        for (Element element : this.living) {
-            int x = element.getX();
-            int y = element.getY();
-
-            element(x - 1, y - 1).addLiving();
-            element(x    , y - 1).addLiving();
-            element(x + 1, y - 1).addLiving();
-
-            element(x - 1, y    ).addLiving();
-            element(x + 1, y    ).addLiving();
-
-            element(x - 1, y + 1).addLiving();
-            element(x    , y + 1).addLiving();
-            element(x + 1, y + 1).addLiving();
+        Iterator<Element> elementIterator = this.elementList.iterator();
+        while (elementIterator.hasNext()) {
+            live(elementIterator.next());
         }
 
         this.prepared = true;
     }
 
     public void display(int x, int y) {
-        System.out.print(element(x, y).getState() ? 1 : 0);
+        System.out.print(element(x, y).getState() ? "x" : "o");
     }
 
     public void displayAll() {
-        for(int y = 0; y < this.height; y++) {
+        System.out.println("        Current Iteration: " + iteration);
+        for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width; x++) {
                 display(x, y);
             }
@@ -102,16 +95,99 @@ public class Board {
         }
     }
 
-    public void iterate() {
-        for (Element element : living) {
-            if (element(element.getX(), element.getY()).getLivingAround() < 2) {
-                element.setState(false);
-                this.subtractAround(element);
+    public void displayLivingAround() {
+        System.out.println("        Current Iteration: " + iteration);
+        for (int y = 0; y < this.height; y++) {
+            for (int x = 0; x < this.width; x++) {
+                System.out.print(element(x, y).getLivingAround());
             }
+            System.out.println();
         }
     }
 
-    private void subtractAround(Element element) {
+    public void iterate() {
+        if (!prepared) {
+            System.out.println("Elements not correctly configured! prepare() needs to be run on this board instance.");
+            return;
+        }
 
+        Iterator<Element> elementIterator = elementList.iterator();
+
+        while (elementIterator.hasNext()) {
+            Element element = elementIterator.next();
+
+            int x = element.getX();
+            int y = element.getY();
+            int living = element(x, y).getLivingAround();
+            if (element.getState() && living < 2 || living > 3) {
+                this.kill(element);
+            } else if (living == 3) {
+                this.live(element);
+            }
+        }
+
+        iteration++;
+    }
+
+    private void live(Element element) {
+        int x = element.getX();
+        int y = element.getY();
+
+        element.setState(true);
+
+        element(x - 1, y - 1).addLiving();
+        element(x, y - 1).addLiving();
+        element(x + 1, y - 1).addLiving();
+
+        element(x - 1, y).addLiving();
+        element(x + 1, y).addLiving();
+
+        element(x - 1, y + 1).addLiving();
+        element(x, y + 1).addLiving();
+        element(x + 1, y + 1).addLiving();
+
+        elementList.add(element);
+
+        elementList.add(element(x - 1, y - 1));
+        elementList.add(element(x, y - 1));
+        elementList.add(element(x + 1, y - 1));
+
+        elementList.add(element(x - 1, y));
+        elementList.add(element(x + 1, y));
+
+        elementList.add(element(x - 1, y + 1));
+        elementList.add(element(x, y + 1));
+        elementList.add(element(x + 1, y + 1));
+    }
+
+    private void kill(Element element) {
+        int x = element.getX();
+        int y = element.getY();
+
+        element.setState(false);
+
+        element(x - 1, y - 1).subtractLiving();
+        element(x, y - 1).subtractLiving();
+        element(x + 1, y - 1).subtractLiving();
+
+        element(x - 1, y).subtractLiving();
+        element(x + 1, y).subtractLiving();
+
+        element(x - 1, y + 1).subtractLiving();
+        element(x, y + 1).subtractLiving();
+        element(x + 1, y + 1).subtractLiving();
+
+        elementList.remove(element);
+
+        if (!element(x - 1, y - 1).getState()) elementList.remove(element(x - 1, y - 1));
+        if (!element(x, y - 1).getState()) elementList.remove(element(x, y - 1));
+        if (!element(x + 1, y - 1).getState()) elementList.remove(element(x + 1, y - 1));
+
+        if (!element(x - 1, y).getState()) elementList.remove(element(x - 1, y));
+        if (!element(x + 1, y).getState()) elementList.remove(element(x + 1, y));
+
+        if (!element(x - 1, y + 1).getState()) elementList.remove(element(x - 1, y + 1));
+        if (!element(x, y + 1).getState()) elementList.remove(element(x, y + 1));
+        if (!element(x + 1, y + 1).getState()) elementList.remove(element(x + 1, y + 1));
     }
 }

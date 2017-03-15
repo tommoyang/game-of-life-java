@@ -39,4 +39,12 @@ public class Element {
             livingAround = 0;
         }
     }
+
+    public Element clone() {
+        Element element = new Element(x, y);
+        element.state = this.state;
+        element.livingAround = this.livingAround;
+
+        return element;
+    }
 }
