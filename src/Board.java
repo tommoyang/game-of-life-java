@@ -1,6 +1,4 @@
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class Board {
     private int height;
@@ -72,11 +70,18 @@ public class Board {
         this.elementList.add(element(x, y));
     }
 
+    public List<Element> getCopy() {
+        return new ArrayList<>(this.elementList);
+    }
+
     public void prepare() {
-        Iterator<Element> elementIterator = this.elementList.iterator();
-        while (elementIterator.hasNext()) {
-            live(elementIterator.next());
+        List<Element> elementCopy = getCopy();
+
+        for (int i = 0; i < elementList.size(); i++) {
+            live(elementCopy.get(i), elementCopy);
         }
+
+        this.elementList = elementCopy;
 
         this.prepared = true;
     }
@@ -111,25 +116,27 @@ public class Board {
             return;
         }
 
-        Iterator<Element> elementIterator = elementList.iterator();
+        List<Element> elementCopy = getCopy();
 
-        while (elementIterator.hasNext()) {
-            Element element = elementIterator.next();
+        for (int i = 0; i < elementCopy.size(); i++) {
+            Element element = elementCopy.get(i);
 
             int x = element.getX();
             int y = element.getY();
             int living = element(x, y).getLivingAround();
             if (element.getState() && living < 2 || living > 3) {
-                this.kill(element);
+                this.kill(element, elementCopy);
             } else if (living == 3) {
-                this.live(element);
+                this.live(element, elementCopy);
             }
         }
+
+        this.elementList = elementCopy;
 
         iteration++;
     }
 
-    private void live(Element element) {
+    private void live(Element element, List<Element> elementCopy) {
         int x = element.getX();
         int y = element.getY();
 
@@ -146,21 +153,21 @@ public class Board {
         element(x, y + 1).addLiving();
         element(x + 1, y + 1).addLiving();
 
-        elementList.add(element);
+        elementCopy.add(element);
 
-        elementList.add(element(x - 1, y - 1));
-        elementList.add(element(x, y - 1));
-        elementList.add(element(x + 1, y - 1));
+        elementCopy.add(element(x - 1, y - 1));
+        elementCopy.add(element(x, y - 1));
+        elementCopy.add(element(x + 1, y - 1));
 
-        elementList.add(element(x - 1, y));
-        elementList.add(element(x + 1, y));
+        elementCopy.add(element(x - 1, y));
+        elementCopy.add(element(x + 1, y));
 
-        elementList.add(element(x - 1, y + 1));
-        elementList.add(element(x, y + 1));
-        elementList.add(element(x + 1, y + 1));
+        elementCopy.add(element(x - 1, y + 1));
+        elementCopy.add(element(x, y + 1));
+        elementCopy.add(element(x + 1, y + 1));
     }
 
-    private void kill(Element element) {
+    private void kill(Element element, List<Element> elementCopy) {
         int x = element.getX();
         int y = element.getY();
 
@@ -177,17 +184,17 @@ public class Board {
         element(x, y + 1).subtractLiving();
         element(x + 1, y + 1).subtractLiving();
 
-        elementList.remove(element);
+        elementCopy.remove(element);
 
-        if (!element(x - 1, y - 1).getState()) elementList.remove(element(x - 1, y - 1));
-        if (!element(x, y - 1).getState()) elementList.remove(element(x, y - 1));
-        if (!element(x + 1, y - 1).getState()) elementList.remove(element(x + 1, y - 1));
+        if (!element(x - 1, y - 1).getState()) elementCopy.remove(element(x - 1, y - 1));
+        if (!element(x, y - 1).getState()) elementCopy.remove(element(x, y - 1));
+        if (!element(x + 1, y - 1).getState()) elementCopy.remove(element(x + 1, y - 1));
 
-        if (!element(x - 1, y).getState()) elementList.remove(element(x - 1, y));
-        if (!element(x + 1, y).getState()) elementList.remove(element(x + 1, y));
+        if (!element(x - 1, y).getState()) elementCopy.remove(element(x - 1, y));
+        if (!element(x + 1, y).getState()) elementCopy.remove(element(x + 1, y));
 
-        if (!element(x - 1, y + 1).getState()) elementList.remove(element(x - 1, y + 1));
-        if (!element(x, y + 1).getState()) elementList.remove(element(x, y + 1));
-        if (!element(x + 1, y + 1).getState()) elementList.remove(element(x + 1, y + 1));
+        if (!element(x - 1, y + 1).getState()) elementCopy.remove(element(x - 1, y + 1));
+        if (!element(x, y + 1).getState()) elementCopy.remove(element(x, y + 1));
+        if (!element(x + 1, y + 1).getState()) elementCopy.remove(element(x + 1, y + 1));
     }
 }

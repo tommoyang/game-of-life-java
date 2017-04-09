@@ -11,5 +11,22 @@ public class Main {
         board.displayAll();
         board.prepare();
         board.displayLivingAround();
+
+
+        board.iterate();
+        board.displayAll();
+        board.displayLivingAround();
+
+        board.iterate();
+        board.displayAll();
+        board.displayLivingAround();
+
+        board.iterate();
+        board.displayAll();
+        board.displayLivingAround();
+
+        board.iterate();
+        board.displayAll();
+        board.displayLivingAround();
     }
 }
